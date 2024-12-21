@@ -171,7 +171,13 @@ vim.keymap.set('n', '<S-l>', ':bnext<CR>', { desc = "Next buffer" })
 
 
 
+vim.opt.wrap = false
 
+-- Move visual selection up
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv", { desc = 'Move selection up' })
+
+-- Move visual selection down
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv", { desc = 'Move selection down' })
 
 
 
@@ -200,10 +206,34 @@ vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Toggle File Ex
 --  Use CTRL+<hjkl> to switch between windows
 --
 --  See `:help wincmd` for a list of all window commands
-vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+-- Move focus to the left window and adjust the window sizes
+-- Move focus to the left window and resize
+vim.keymap.set('n', '<C-h>', function()
+  vim.cmd('vertical resize 80')  -- Set the current window to 80% width
+  vim.cmd('vertical resize -20') -- Set the other window to 20% width
+  vim.cmd('wincmd h')            -- Move focus to the left window
+end, { desc = 'Move focus to the left window and resize' })
+
+-- Move focus to the right window and resize
+vim.keymap.set('n', '<C-l>', function()
+  vim.cmd('vertical resize 80')  -- Set the current window to 80% width
+  vim.cmd('vertical resize -20') -- Set the other window to 20% width
+  vim.cmd('wincmd l')            -- Move focus to the right window
+end, { desc = 'Move focus to the right window and resize' })
+
+-- Move focus to the lower window and resize
+vim.keymap.set('n', '<C-j>', function()
+  vim.cmd('resize 80')  -- Set the current window to 80% height
+  vim.cmd('resize -20') -- Set the other window to 20% height
+  vim.cmd('wincmd j')   -- Move focus to the lower window
+end, { desc = 'Move focus to the lower window and resize' })
+
+-- Move focus to the upper window and resize
+vim.keymap.set('n', '<C-k>', function()
+  vim.cmd('resize 80')  -- Set the current window to 80% height
+  vim.cmd('resize -20') -- Set the other window to 20% height
+  vim.cmd('wincmd k')   -- Move focus to the upper window
+end, { desc = 'Move focus to the upper window and resize' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -699,15 +729,6 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
-        clangd = {
-          -- Indentation settings for C++
-          -- Configure tab width to 4 spaces
-          formatting = {
-            tabSize = 4,         -- Set tab size to 4 spaces
-            indentWidth = 4,     -- Set indent width to 4 spaces
-            useTab = false,      -- Use spaces instead of tabs for indentation
-          },
-        },
         lua_ls = {
           -- cmd = {...},
           -- filetypes = { ...},
