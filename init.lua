@@ -164,10 +164,10 @@ vim.opt.scrolloff = 10
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Map Shift+H to go to the previous buffer
-vim.keymap.set('n', '<S-h>', ':bprevious<CR>', { desc = "Previous buffer" })
+vim.keymap.set('n', '<S-l>', ':bnext<CR>', { desc = "Next buffer" })
 
 -- Map Shift+L to go to the next buffer
-vim.keymap.set('n', '<S-l>', ':bnext<CR>', { desc = "Next buffer" })
+vim.keymap.set('n', '<S-h>', ':bprevious<CR>', { desc = "Previous buffer" })
 
 
 
@@ -180,6 +180,11 @@ vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv", { desc = 'Move selection up' })
 vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv", { desc = 'Move selection down' })
 
 
+-- Move buffer to the left
+vim.keymap.set('n', '<leader>bp', ':BufferLineMovePrev<CR>')
+
+-- Move buffer to the right
+vim.keymap.set('n', '<leader>bn', ':BufferLineMoveNext<CR>')
 
 
 vim.keymap.set('n', '<C-u>', '<C-u>zz')
@@ -295,10 +300,21 @@ vim.api.nvim_set_keymap('n', '<leader>p', '<cmd>lua vim.lsp.buf.format()<CR>', {
 vim.api.nvim_create_autocmd({ "InsertLeave", "FocusLost" }, {
   callback = function()
     if vim.bo.modifiable and vim.bo.filetype ~= "" and vim.bo.buftype == "" then
+      vim.cmd(" write")
+    end
+  end,
+})
+
+
+vim.api.nvim_create_autocmd("BufLeave", {
+  pattern = "*",
+  callback = function()
+    if vim.bo.modifiable and not vim.bo.readonly then
       vim.cmd("silent! write")
     end
   end,
 })
+
 vim.api.nvim_create_autocmd("ColorScheme", {
   pattern = "*",
   callback = function()
@@ -308,7 +324,7 @@ vim.api.nvim_create_autocmd("ColorScheme", {
       highlight NonText guibg=none
 
       " Change the color of comments
-      highlight Comment guifg=#e599f5 gui=italic
+      highlight Comment guifg=#B0B0B0 gui=italic
 
       " Change the color of line numbers
       highlight LineNr guifg=#e599f5 guibg=none
@@ -744,6 +760,7 @@ require('lazy').setup({
           },
         },
       }
+
       -- Set up NvimTree
       require("nvim-tree").setup({
         view = {
@@ -975,7 +992,22 @@ require('lazy').setup({
   },
 
 
-
+  {
+    'akinsho/bufferline.nvim',
+    dependencies = { 'kyazdani42/nvim-web-devicons' },     -- You may need this for file type icons
+    config = function()
+      require("bufferline").setup({
+        options = {
+          numbers = "ordinal",                                                                            -- Show buffer numbers as ordinals
+          diagnostics = "nvim_lsp",                                                                       -- Enable LSP diagnostics
+          offsets = { { filetype = "NvimTree", text = "File Explorer", highlight = "Directory" } },       -- Optional: Custom offset for NvimTree
+          show_buffer_close_icons = false,                                                                -- Optional: Disable close icons
+          separator_style = "slant",                                                                      -- Optional: Style of the separator
+          enforce_regular_tabs = false,                                                                   -- Optional: Keep tabs regular
+        }
+      })
+    end
+  },
 
 
   -- Highlight todo, notes, etc in comments
@@ -1063,6 +1095,16 @@ require('lazy').setup({
   },
 
 
+  -- lazy.nvim configuration
+  {
+    "windwp/nvim-autopairs",
+    config = function()
+      require("nvim-autopairs").setup({
+        check_ts = true, -- Enable Treesitter integration
+        fast_wrap = {},
+      })
+    end,
+  },
   {
     'nvim-lualine/lualine.nvim',
     dependencies = { 'nvim-tree/nvim-web-devicons', 'nvim-treesitter/nvim-treesitter' },
@@ -1106,7 +1148,7 @@ require('lazy').setup({
   {
     'Yggdroot/indentLine',
     config = function()
-      vim.g.indentLine_char = '︴' -- Character for indent lines
+      vim.g.indentLine_char = '|' -- Character for indent lines
       vim.g.indentLine_fileTypeExclude = { 'help', 'dashboard', 'packer', 'NvimTree' }
       vim.g.indentLine_bufTypeExclude = { 'terminal', 'nofile' }
     end,
